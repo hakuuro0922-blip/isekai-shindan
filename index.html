@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>異世界転生ステータス診断</title>
+<meta name="description" content="女神の5つの質問に答えて、転生後のあなたを鑑定。二つ名・固有スキル・弱点・ランクがわかる無料の診断です。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="異世界転生ステータス診断">
+<meta property="og:description" content="女神の5つの質問に答えて、転生後のあなたを鑑定。二つ名・固有スキル・弱点・ランクがわかります。">
+<meta property="og:url" content="https://hakuuro0922-blip.github.io/isekai-shindan/">
+<meta property="og:image" content="https://hakuuro0922-blip.github.io/isekai-shindan/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#e7eaf7; --ink:#1f2340; --muted:#545a7d;
+  --win:#1c2877; --win-edge:#f3f5ff; --win-ink:#f3f5ff; --win-muted:#b9c1ef;
+  --bar:#6fd3ff; --bar-track:#2c3a96; --gold:#f2c94c; --chip:#2a3790; --rare:#ff8fb1;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#11152f; --ink:#e6e9fb; --muted:#a3aad3; --bar-track:#26338a; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --page:#11152f; --ink:#e6e9fb; --muted:#a3aad3; --bar-track:#26338a; color-scheme:dark; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.7}
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 56px}
+.pix{font-family:"DotGothic16","MS Gothic","Osaka-Mono",monospace;letter-spacing:.04em}
+.window{
+  background:var(--win);color:var(--win-ink);
+  border:4px solid var(--win-edge);border-radius:10px;
+  box-shadow:0 0 0 4px var(--win),0 10px 0 4px rgba(20,28,90,.25);
+  padding:16px 18px 18px;margin:4px;position:relative;
+}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-weight:400;font-size:clamp(22px,5.6vw,32px);line-height:1.3;margin:0}
+.sound{font:inherit;font-size:14px;color:var(--win-ink);background:transparent;border:2px solid var(--win-muted);border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.sub{margin:6px 0 0;color:var(--win-muted);font-size:15px}
+#stage{margin-top:22px;min-height:180px;cursor:pointer}
+#msg{font-size:18px;line-height:1.85;min-height:3.7em;margin:0;white-space:pre-wrap}
+#msg.done::after{content:"▼";display:inline-block;margin-left:6px;animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.choices{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+.choices button{
+  width:100%;text-align:left;font:inherit;font-size:17px;color:var(--win-ink);background:transparent;
+  border:0;border-radius:6px;padding:8px 10px 8px 30px;cursor:pointer;position:relative;
+}
+.choices button::before{content:"▶";position:absolute;left:8px;opacity:0}
+.choices button:hover,.choices button:focus-visible{background:var(--chip)}
+.choices button:hover::before,.choices button:focus-visible::before{opacity:1}
+.namebox{display:flex;gap:8px;margin-top:14px}
+.namebox input{flex:1;min-width:0;font:inherit;font-size:18px;padding:10px 12px;color:var(--win-ink);background:var(--chip);border:2px solid var(--win-muted);border-radius:6px}
+.namebox button{font:inherit;font-size:17px;padding:10px 16px;color:var(--win);background:var(--win-ink);border:0;border-radius:6px;cursor:pointer}
+.hint{margin:10px 0 0;color:var(--win-muted);font-size:13px}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#result{margin-top:26px}
+.r-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.r-name{font-size:20px}
+.rank{font-size:18px;color:var(--gold)}
+.title{font-size:clamp(22px,5.8vw,30px);line-height:1.35;margin:10px 0 2px;color:var(--gold);min-height:1.35em}
+.meta{color:var(--win-muted);margin:0 0 14px}
+.stats{display:grid;gap:7px;margin:0 0 14px}
+.stat{display:grid;grid-template-columns:4.2em 1fr 3.4em;align-items:center;gap:10px}
+.track{height:12px;background:var(--bar-track);border-radius:3px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--bar);transition:width .9s steps(18,end)}
+.fill.cheat{background:var(--gold)}
+.num{text-align:right}
+.sec{margin:14px 0 6px;color:var(--win-muted)}
+.skills{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.skills li{background:var(--chip);border-radius:6px;padding:8px 10px}
+.skills b{display:block}
+.skills .uniq b{color:var(--rare)}
+.skills small{color:var(--win-muted);font-size:14px}
+.kv{margin:4px 0}
+.comment{margin:14px 0 0;padding-top:12px;border-top:2px dashed var(--win-muted)}
+.reveal > *{opacity:0}
+.reveal > .on{opacity:1;transition:opacity .25s steps(3,end)}
+.r-ssr{border-color:var(--gold)}
+.r-ur,.r-ex{animation:rainbow 2.4s linear 1 forwards}
+@keyframes rainbow{
+  0%{border-color:#ff6b6b}20%{border-color:#ffd166}40%{border-color:#7ae582}
+  60%{border-color:#6fd3ff}80%{border-color:#b18cff}100%{border-color:var(--gold)}
+}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.actions button,.actions a{font:inherit;font-weight:700;font-size:15px;padding:11px 6px;border-radius:8px;cursor:pointer;text-align:center;text-decoration:none;border:2px solid var(--muted);background:transparent;color:var(--ink)}
+.status{min-height:1.6em;color:var(--muted);font-size:14px;margin-top:8px;text-align:center}
+.imgbox{margin-top:18px}
+.imgbox img{display:block;width:100%;height:auto;border-radius:8px;margin-top:6px}
+.sec-out{margin:0;color:var(--muted);font-weight:700}
+.img-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.img-actions a,.img-actions button{font:inherit;font-weight:700;font-size:15px;padding:11px 6px;border-radius:8px;cursor:pointer;text-align:center;text-decoration:none;border:2px solid var(--muted);background:transparent;color:var(--ink)}
+.img-actions [hidden]{display:none}
+footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
+@media (max-width:420px){.actions{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){
+  .fill{transition:none}.r-ur,.r-ex{animation:none;border-color:var(--gold)}
+  #msg.done::after{animation:none}.reveal > *{opacity:1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="window">
+    <div class="top">
+      <h1 class="pix">異世界転生ステータス診断</h1>
+      <button class="sound pix" id="sound" type="button" aria-pressed="false">音:オフ</button>
+    </div>
+    <p class="sub">女神の質問に答えて、転生後のあなたを鑑定しよう。同じ答えなら、何度やっても同じ結果になります。</p>
+  </header>
+
+  <section class="window pix" id="stage" aria-label="女神との会話">
+    <p id="msg" aria-live="polite"></p>
+    <div id="ui"></div>
+  </section>
+
+  <section id="result" hidden></section>
+
+  <footer>結果はただの遊びです。入力した内容はどこにも送信されません。</footer>
+</div>
+
+<script>
+(() => {
+  // ---------- データ ----------
+  const QUESTIONS = [
+    { id:'past', say:'女神「前の世界では、どんな毎日を送っていましたか?」', opts:[['gamer','夜更かししてゲーム'],['worker','仕事に追われていた'],['slow','のんびり暮らしていた'],['cook','料理ばかりしていた']] },
+    { id:'crisis', say:'女神「目の前に大きな危機が迫ったら、どうしますか?」', opts:[['charge','真っ先に突っ込む'],['plan','作戦を考える'],['talk','話し合いで解決する'],['run','とりあえず逃げる']] },
+    { id:'time', say:'女神「一番好きな時間帯は?」', opts:[['morning','朝'],['noon','昼'],['dusk','夕暮れ'],['night','深夜']] },
+    { id:'weapon', say:'女神「では、手に取りたい武器を選んでください」', opts:[['sword','剣'],['staff','杖'],['bow','弓'],['fist','素手']] },
+    { id:'want', say:'女神「最後に。新しい世界で、一番欲しいものは?」', opts:[['power','最強の力'],['friends','頼れる仲間'],['slowlife','スローライフ'],['knowledge','世界の知識']] }
+  ];
+  const RACES = ['人間','エルフ','ハーフエルフ','ドワーフ','猫の獣人','狼の獣人','竜人','魔族','精霊','妖精','吸血鬼','天使'];
+  const RARE_RACES = [['聖剣(本体)','勇者の相棒'],['ダンジョンの宝箱','宝箱見習い'],['伝説の卵','まだ孵っていない'],['古代ゴーレム','遺跡の番人']];
+  const JOBS = {
+    sword:['剣士','聖騎士','魔剣士','侍','騎士団長','双剣使い'],
+    staff:['魔導士','賢者','召喚士','錬金術師','時魔導士','結界師'],
+    bow:['狩人','弓聖','斥候','吟遊詩人','魔弓士','森の番人'],
+    fist:['拳闘士','武闘家','鍛冶師','僧兵','格闘料理人','重戦士']
+  };
+  const SECRET_JOBS = ['勇者','魔王','神の代理人','伝説の村人'];
+  const PRE_PAST = {
+    gamer:['深夜の','徹夜明けの','最終面の','セーブし忘れた','周回中の','裏ボス帰りの'],
+    worker:['定時を知らぬ','締切を越えし','有給を忘れた','鉄の胃袋の','会議をくぐり抜けた','終電の'],
+    slow:['二度寝の','辺境の','日だまりの','急がない','うたた寝の','縁側の'],
+    cook:['かまどの','満腹の','味見の','火加減の','おかわりの','鍋奉行の']
+  };
+  const PRE_TIME = { morning:['暁の','朝焼けの'], noon:['真昼の','陽光の'], dusk:['黄昏の','夕凪の'], night:['月下の','宵闇の'] };
+  const SUF_WANT = {
+    power:['覇王','破壊者','最強','竜殺し','剣聖','天災'],
+    friends:['人たらし','守護者','旗振り','宴の主','絆の勇者','みんなの相棒'],
+    slowlife:['隠居人','畑の主','昼寝王','湖畔の住人','のんびり領主','もふもふ使い'],
+    knowledge:['観測者','賢人','書庫番','真理の探究者','星読み','禁書の読み手']
+  };
+  const SUF_CRISIS = { charge:['特攻隊長','突撃者'], plan:['軍師','策士'], talk:['交渉人','和平の使者'], run:['逃げ足名人','生存者'] };
+  const SKILL_PAST = {
+    gamer:[['徹夜耐性','三日寝なくても能力が落ちない'],['やり直し','一日一回、失敗した行動をなかったことにできる'],['攻略の記憶','初めての場所でも隠し通路が分かる'],['連打','同じ技を目にも止まらぬ速さで繰り出せる'],['周回の知恵','同じ敵と二回目に戦うとき、必ず先手を取れる']],
+    worker:[['残業耐性','疲れるほど作業が速くなる'],['報連相','仲間全員の状態がいつでも分かる'],['定時退社(封印)','使えば全能力が倍になるが、まだ一度も使えていない'],['根回し','戦う前に、だいたい話がついている'],['議事録','聞いた話を一字一句忘れない']],
+    slow:[['二度寝','眠るたびにHPとMPが全回復する'],['マイペース','威圧も混乱も効かない'],['日向ぼっこ','晴れの日だけ全能力が上がる'],['おすそわけ','持ち物を分けるほど運が上がる'],['迷子の才能','迷うほど珍しい場所にたどり着く']],
+    cook:[['異世界料理','食べた仲間の能力を半日上げる'],['味見鑑定','ひと口で毒や呪いを見抜く'],['火加減','炎魔法の威力を自在に調整できる'],['まかない','残り物から回復薬を作れる'],['満腹の陣','食事のあと三時間、仲間全員の防御が上がる']]
+  };
+  const SKILL_WANT = {
+    power:[['限界突破','能力の上限がない'],['覇気','格下の敵が戦わずに逃げていく'],['一騎当千','敵が多いほど強くなる'],['竜の血','傷が一晩で治る']],
+    friends:[['人たらし','出会った相手が最初から少し好意的'],['絆の盾','仲間がそばにいるほど防御が上がる'],['宴会芸','どんな険悪な場も笑いで和ませる'],['呼び声','困ったとき、なぜか誰かが通りかかる']],
+    slowlife:[['畑仕事Lv.MAX','どんな荒れ地も三日で畑になる'],['もふもふ招来','なぜか動物に懐かれる'],['家づくり','一晩で小屋が建つ'],['天気読み','明日の天気を外さない']],
+    knowledge:[['全書庫閲覧','一度見た本の内容を全部思い出せる'],['鑑定眼','人や物の情報が文字で見える'],['古代語','失われた言葉が読める'],['星図','夜空を見れば今いる場所が分かる']]
+  };
+  const SKILL_CRISIS = {
+    charge:[['先陣','戦いの最初の一撃が必ず当たる'],['勢い任せ','考えるより先に体が正解を選ぶ']],
+    plan:[['布陣','仲間の並びを決めると全員の能力が上がる'],['先読み','相手の次の行動がうっすら見える']],
+    talk:[['説得','敵の三割は話せば分かってくれる'],['通訳','初めて会う種族とも会話できる']],
+    run:[['離脱','どんな戦いからも必ず逃げられる'],['生存本能','一度だけ倒れても立ち上がる']]
+  };
+  const UNIQUE = [['時間停止(3秒)','世界の時間を3秒だけ止められる'],['因果の書き換え','一日一回、起きた出来事を一つだけ別の結果にできる'],['全言語理解','あらゆる言葉と文字が分かる'],['無限の鞄','いくらでも物が入る鞄を持っている'],['二周目の記憶','この世界をすでに一度生きた記憶がある']];
+  const WEAK = ['朝','虫','書類仕事','高いところ','甘いもの','雷','くしゃみ','方向感覚','おばけ','猫のお願い','早口言葉','押しの強い商人'];
+  const BLESS = ['寝坊の女神','締切の神','満腹の精霊','気まぐれな風の神','忘れ物の女神','猫の守り神','残り物の福の神','雨宿りの神','迷子の守り星','おやつの女神','筋肉の神','夜ふかしの月'];
+  const COMMENTS = [
+    'のんびり生きる予定が、なぜか国を救う流れになりそうです。',
+    '本人は普通のつもりですが、周りからは完全に規格外扱いです。',
+    '序盤の村で三年くらい過ごしてから本気を出すタイプです。',
+    '仲間に恵まれますが、だいたい全員クセが強いです。',
+    '最初の敵がなぜか毎回、後で味方になります。',
+    'ギルドの受付で一度は「え?」と二度見されます。',
+    '世界の秘密に、朝ごはんのついでに気づきます。',
+    '魔王より先に、まず生活の基盤を整えるべきです。',
+    '気づけば街の名物になっています。',
+    '三章あたりで急に過去が重くなります。',
+    '本気を出すと地形が変わるので、ほどほどに。',
+    '女神も少し期待しています。少しだけ。'
+  ];
+  const STAT_NAMES = ['HP','MP','攻撃','防御','魔力','素早さ','運'];
+  const FOCUS_W = { sword:[2,3], staff:[1,4], bow:[5,6], fist:[0,2] };
+  const FOCUS_C = { charge:2, plan:4, talk:6, run:5 };
+
+  // ---------- 決まった乱数 ----------
+  function fnv(str){ let h = 0x811c9dc5; for (const c of str){ h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+  function mulberry32(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  function judge(name, a){
+    const rand = mulberry32(fnv([name, a.past, a.crisis, a.time, a.weapon, a.want].join('|')));
+    const pick = arr => arr[Math.floor(rand() * arr.length)];
+    let race = pick(RACES), job = pick(JOBS[a.weapon]), ex = false;
+    if (rand() < 0.03){ const r = pick(RARE_RACES); race = r[0]; job = r[1]; ex = true; }
+    else if (rand() < 0.015){ job = pick(SECRET_JOBS); ex = true; }
+    const pre = rand() < 0.65 ? pick(PRE_PAST[a.past]) : pick(PRE_TIME[a.time]);
+    const suf = rand() < 0.7 ? pick(SUF_WANT[a.want]) : pick(SUF_CRISIS[a.crisis]);
+    const level = 1 + Math.floor(Math.pow(rand(), 2) * 98);
+    const focus = [...FOCUS_W[a.weapon], FOCUS_C[a.crisis]];
+    const cheat = rand() < 0.1 ? Math.floor(rand() * STAT_NAMES.length) : -1;
+    const stats = STAT_NAMES.map((n, i) => {
+      if (i === cheat) return { n, v: null };
+      let v = 40 + Math.floor(rand() * 400);
+      focus.forEach(f => { if (f === i) v += 160 + Math.floor(rand() * 240); });
+      return { n, v: Math.min(v, 999) };
+    });
+    const skills = [
+      { s: pick(SKILL_PAST[a.past]) },
+      { s: pick(SKILL_WANT[a.want]) },
+      rand() < 0.06 ? { s: pick(UNIQUE), uniq: true } : { s: pick(SKILL_CRISIS[a.crisis]) }
+    ];
+    const weak = pick(WEAK);
+    const blessing = pick(BLESS) + 'の加護';
+    const total = stats.reduce((s, x) => s + (x.v ?? 0), 0);
+    let rank = 'N', tier = 'n';
+    if (ex){ rank = 'EX 運命改変'; tier = 'ex'; }
+    else if (cheat >= 0){ rank = 'UR 規格外'; tier = 'ur'; }
+    else if (total >= 3200){ rank = 'SSR'; tier = 'ssr'; }
+    else if (total >= 2700){ rank = 'SR'; tier = 'sr'; }
+    else if (total >= 2200){ rank = 'R'; tier = 'r'; }
+    return { name, race, job, title: pre + suf, level, stats, skills, weak, blessing, rank, tier, comment: pick(COMMENTS) };
+  }
+
+  // ---------- 演出 ----------
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const msg = document.getElementById('msg');
+  const ui = document.getElementById('ui');
+  const stage = document.getElementById('stage');
+  const soundBtn = document.getElementById('sound');
+  let soundOn = false, ctx = null, skipLine = false;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  soundBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    soundOn = !soundOn;
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.textContent = soundOn ? '音:オン' : '音:オフ';
+    if (soundOn && !ctx){ try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { ctx = null; } }
+  });
+  function tone(freq, dur, type = 'square', vol = 0.04, delay = 0){
+    if (!soundOn || !ctx) return;
+    const t = ctx.currentTime + delay, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.02);
+  }
+  const blip = () => tone(880, 0.03);
+  const select = () => { tone(660, 0.05); tone(990, 0.07, 'square', 0.04, 0.05); };
+  const fanfare = tier => {
+    const notes = tier === 'ex' || tier === 'ur' ? [523,659,784,1047,1319] : tier === 'ssr' ? [523,659,784,1047] : [523,659,784];
+    notes.forEach((n, i) => tone(n, 0.18, 'triangle', 0.06, i * 0.11));
+  };
+
+  stage.addEventListener('click', () => { skipLine = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') skipLine = true; });
+
+  async function say(text, pause = 500){
+    msg.classList.remove('done');
+    skipLine = false;
+    if (reduced){ msg.textContent = text; }
+    else {
+      msg.textContent = '';
+      for (let i = 0; i < text.length; i++){
+        if (skipLine){ msg.textContent = text; break; }
+        msg.textContent += text[i];
+        if (i % 2 === 0) blip();
+        await sleep(32);
+      }
+    }
+    msg.classList.add('done');
+    skipLine = false;
+    if (pause) await sleep(reduced ? 150 : pause);
+  }
+
+  function askName(){
+    return new Promise(resolve => {
+      ui.innerHTML = `
+        <div class="namebox">
+          <input type="text" maxlength="16" autocomplete="nickname" placeholder="名前" aria-label="名前" enterkeyhint="done">
+          <button type="button">決定</button>
+        </div>
+        <p class="hint" aria-live="polite"></p>`;
+      const f = ui.querySelector('.namebox'), inp = f.querySelector('input'), btn = f.querySelector('button'), hint = ui.querySelector('.hint');
+      inp.focus();
+      let done = false;
+      const submit = () => {
+        if (done) return;
+        const v = inp.value.trim();
+        if (!v){ hint.textContent = '名前を入れてください。'; inp.focus(); return; }
+        done = true; select(); ui.innerHTML = ''; resolve(v);
+      };
+      btn.addEventListener('click', e => { e.stopPropagation(); submit(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); e.stopPropagation(); submit(); } });
+      f.addEventListener('click', e => e.stopPropagation());
+    });
+  }
+
+  function choose(opts){
+    return new Promise(resolve => {
+      const ul = document.createElement('ul');
+      ul.className = 'choices';
+      opts.forEach(([v, label]) => {
+        const li = document.createElement('li'), b = document.createElement('button');
+        b.type = 'button'; b.textContent = label;
+        b.addEventListener('click', e => { e.stopPropagation(); select(); ui.innerHTML = ''; resolve(v); });
+        li.appendChild(b); ul.appendChild(li);
+      });
+      ui.innerHTML = ''; ui.appendChild(ul);
+      ul.querySelector('button').focus();
+      ul.addEventListener('keydown', e => {
+        const btns = [...ul.querySelectorAll('button')], i = btns.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown'){ e.preventDefault(); btns[(i + 1) % btns.length].focus(); }
+        if (e.key === 'ArrowUp'){ e.preventDefault(); btns[(i - 1 + btns.length) % btns.length].focus(); }
+      });
+    });
+  }
+
+  async function run(){
+    document.getElementById('result').hidden = true;
+    await say('……目を覚ますと、光をまとった女神が立っていた。', 700);
+    await say('女神「ようこそ、次の世界へ。まずは、あなたの名前を教えてください」', 0);
+    const name = await askName();
+    const ans = {};
+    for (const q of QUESTIONS){
+      await say(q.say, 0);
+      ans[q.id] = await choose(q.opts);
+    }
+    await say(`女神「${name}さんですね。では、鑑定を始めます」`, 600);
+    await say('水晶が淡く光りはじめた……', 900);
+    await say('……見えました。', 400);
+    const r = judge(name, ans);
+    await showResult(r);
+    await say('女神「あなたの新しい人生に、祝福を」', 0);
+  }
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---------- 投稿用の画像 ----------
+  function rr(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  const PF = s => `${s}px "DotGothic16", monospace`;
+  function fitText(c, t, maxW, size, min){ while (size > min){ c.font = PF(size); if (c.measureText(t).width <= maxW) break; size -= 2; } c.font = PF(size); }
+  function clip(c, t, maxW){ if (c.measureText(t).width <= maxW) return t; const s = [...t]; while (s.length && c.measureText(s.join('') + '…').width > maxW) s.pop(); return s.join('') + '…'; }
+
+  async function makeCard(r){
+    const W = 1200, H = 675, cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const c = cv.getContext('2d');
+    const all = [r.name, r.title, r.race, r.job, r.blessing, r.weak, r.rank, ...r.skills.flatMap(k => k.s), '種族職業加護弱点ユニークLv.0123456789∞#異世界転生ステータス診断「」:★HPMP攻撃防御魔力素早さ運…'].join('');
+    try { await document.fonts.load('40px "DotGothic16"', all); } catch {}
+    c.fillStyle = '#11152f'; c.fillRect(0, 0, W, H);
+    rr(c, 24, 24, 1152, 627, 18);
+    c.fillStyle = '#1c2877'; c.fill();
+    c.lineWidth = 8; c.strokeStyle = (r.tier === 'ssr' || r.tier === 'ur' || r.tier === 'ex') ? '#f2c94c' : '#f3f5ff'; c.stroke();
+    c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+    c.fillStyle = '#f3f5ff'; c.font = PF(36); c.fillText(clip(c, `${r.name}  Lv.${r.level}`, 700), 64, 92);
+    c.fillStyle = '#f2c94c'; c.font = PF(34); c.textAlign = 'right'; c.fillText(`★ ${r.rank}`, 1136, 92);
+    c.textAlign = 'left'; fitText(c, `「${r.title}」`, 1072, 56, 30); c.fillText(`「${r.title}」`, 56, 168);
+    c.strokeStyle = '#b9c1ef'; c.lineWidth = 2; c.setLineDash([10, 8]); c.beginPath(); c.moveTo(64, 200); c.lineTo(1136, 200); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#f3f5ff'; c.font = PF(28); c.fillText(clip(c, `種族:${r.race} 職業:${r.job}`, 540), 64, 250);
+    c.fillStyle = '#b9c1ef'; c.font = PF(24);
+    c.fillText(clip(c, `加護:${r.blessing}`, 540), 64, 292);
+    c.fillText(clip(c, `弱点:${r.weak}`, 540), 64, 328);
+    let y = 384;
+    r.skills.forEach(k => {
+      c.fillStyle = k.uniq ? '#ff8fb1' : '#f3f5ff'; c.font = PF(28);
+      c.fillText(clip(c, (k.uniq ? 'ユニーク:' : '') + k.s[0], 540), 64, y);
+      c.fillStyle = '#b9c1ef'; c.font = PF(20); c.fillText(clip(c, k.s[1], 540), 64, y + 30);
+      y += 76;
+    });
+    r.stats.forEach((s, i) => {
+      const yy = 252 + i * 50;
+      c.textAlign = 'left'; c.fillStyle = '#f3f5ff'; c.font = PF(26); c.fillText(s.n, 650, yy);
+      c.fillStyle = '#2c3a96'; c.fillRect(770, yy - 18, 280, 16);
+      c.fillStyle = s.v === null ? '#f2c94c' : '#6fd3ff'; c.fillRect(770, yy - 18, s.v === null ? 280 : Math.round(280 * s.v / 999), 16);
+      c.textAlign = 'right'; c.fillStyle = '#f3f5ff'; c.fillText(s.v === null ? '∞' : String(s.v), 1136, yy);
+    });
+    c.textAlign = 'left'; c.fillStyle = '#b9c1ef'; c.font = PF(22); c.fillText('#異世界転生ステータス診断', 64, 618);
+    return cv;
+  }
+
+  async function buildImage(r, text){
+    const box = document.getElementById('imgbox');
+    if (!box) return;
+    box.innerHTML = '<p class="status">画像を作っています…</p>';
+    try {
+      const cv = await makeCard(r);
+      const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+      if (!blob) throw new Error('no image');
+      const url = URL.createObjectURL(blob);
+      const fname = `isekai-status-${r.name}.png`;
+      box.innerHTML = `<p class="sec-out">投稿用の画像</p>
+        <img alt="${esc(r.name)}のステータス画像" src="${url}">
+        <div class="img-actions"><a href="${url}" download="${esc(fname)}">画像を保存</a><button type="button" id="shareimg">画像で共有</button></div>
+        <p class="status">保存できないときは、画像を長押し(PCは右クリック)して保存してください。</p>`;
+      const file = new File([blob], fname, { type: 'image/png' });
+      const sb = document.getElementById('shareimg');
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        sb.addEventListener('click', async () => { try { await navigator.share({ files: [file], text }); } catch {} });
+      } else { sb.hidden = true; }
+    } catch {
+      box.innerHTML = '<p class="status">画像を作れませんでした。結果をスクリーンショットして使ってください。</p>';
+    }
+  }
+
+  async function showResult(r){
+    const out = document.getElementById('result');
+    const statRows = r.stats.map(s => `
+      <div class="stat"><span>${s.n}</span>
+        <div class="track"><div class="fill${s.v === null ? ' cheat' : ''}" data-w="${s.v === null ? 100 : Math.round(s.v / 999 * 100)}"></div></div>
+        <span class="num">${s.v === null ? '∞' : s.v}</span></div>`).join('');
+    const skillRows = r.skills.map(k => `<li class="${k.uniq ? 'uniq' : ''}"><b>${k.uniq ? 'ユニーク:' : ''}${esc(k.s[0])}</b><small>${esc(k.s[1])}</small></li>`).join('');
+    out.innerHTML = `
+      <div class="window pix reveal r-${r.tier}" id="card">
+        <div class="r-head"><span class="r-name">${esc(r.name)}  Lv.${r.level}</span><span class="rank">★ ${r.rank}</span></div>
+        <p class="title" id="title"></p>
+        <p class="meta">種族:${r.race} 職業:${r.job}</p>
+        <div class="stats">${statRows}</div>
+        <div><p class="sec">固有スキル</p><ul class="skills">${skillRows}</ul></div>
+        <div><p class="kv">加護:${r.blessing}</p><p class="kv">弱点:${r.weak}</p></div>
+        <p class="comment">${r.comment}</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="copy">結果をコピー</button>
+        <a id="share" target="_blank" rel="noopener">Xに投稿</a>
+        <button type="button" id="again">もう一度</button>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <div class="imgbox" id="imgbox"></div>`;
+    out.hidden = false;
+    const card = document.getElementById('card');
+    out.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    const parts = [...card.children];
+    for (const p of parts){
+      p.classList.add('on');
+      if (p.classList.contains('title')){
+        const t = `「${r.title}」`;
+        if (reduced) p.textContent = t;
+        else for (const ch of t){ p.textContent += ch; blip(); await sleep(55); }
+      }
+      if (p.classList.contains('stats')){
+        await sleep(30);
+        p.querySelectorAll('.fill').forEach(f => { f.style.width = f.dataset.w + '%'; });
+        if (!reduced) await sleep(800);
+      }
+      if (!reduced) await sleep(160);
+    }
+    fanfare(r.tier);
+    const text = `【異世界転生ステータス診断】\n${r.name}は「${r.title}」として転生した!\n${r.race}の${r.job} Lv.${r.level} ランク${r.rank}\nスキル:${r.skills.map(k => k.s[0]).join('/')}\n弱点:${r.weak}\n#異世界転生ステータス診断`;
+    const pageUrl = location.href.split('#')[0];
+    document.getElementById('share').href = 'https://x.com/intent/post?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(pageUrl);
+    document.getElementById('copy').addEventListener('click', async () => {
+      const st = document.getElementById('status');
+      try { await navigator.clipboard.writeText(text + '\n' + pageUrl); st.textContent = '結果をコピーしました。'; }
+      catch { st.textContent = 'コピーできませんでした。結果を長押しして選んでください。'; }
+    });
+    buildImage(r, text);
+    document.getElementById('again').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      run();
+    });
+  }
+
+  run();
+})();
+</script>
+</body>
+</html>
